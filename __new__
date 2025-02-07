@@ -1,1 +1,6 @@
 https://www.geeksforgeeks.org/__new__-in-python/
+
+__new__ returns new class instantiated i.e obj,has to return obj created
+__init__ does initialization and assigns values etc ,cannot return anything
+
+when obj created from class,first new is called then init is called
