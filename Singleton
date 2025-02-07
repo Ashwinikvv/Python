@@ -1,0 +1,676 @@
+https://www.geeksforgeeks.org/singleton-pattern-in-python-a-complete-guide/
+
+Singleton Pattern in Python – A Complete Guide
+Last Updated : 21 Aug, 2024
+A Singleton pattern in python is a design pattern that allows you to create just one instance of a class, throughout the lifetime of a program. Using a singleton pattern has many benefits. A few of them are:
+
+To limit concurrent access to a shared resource.
+To create a global point of access for a resource.
+To create just one instance of a class, throughout the lifetime of a program.
+Different ways to implement a Singleton:
+
+A singleton pattern can be implemented in three different ways. They are as follows:
+
+Module-level Singleton
+Classic Singleton
+Borg Singleton
+Module-level Singleton:
+
+All modules are singleton, by definition.  Let’s create a simple module-level singleton where the data is shared among other modules. Here we will create three python files – singleton.py, sample_module1.py, and sample_module2.py – in which the other sample modules share a variable from singleton.py. 
+
+## singleton.py
+shared_variable = "Shared Variable"
+ singleton.py
+
+## samplemodule1.py
+import singleton
+print(singleton.shared_variable)
+singleton.shared_variable += "(modified by samplemodule1)"
+samplemodule1.py
+
+##samplemodule2.py
+import singleton
+print(singleton.shared_variable)
+samplemodule2.py
+
+Let’s look into the output.
+
+
+
+Here, the value changed by samplemodule1 is also reflected in samplemodule2.
+
+Classic Singleton:
+
+Classic Singleton creates an instance only if there is no instance created so far; otherwise, it will return the instance that is already created. Let’s take a look at the below code.
+
+
+
+1
+class SingletonClass(object):
+2
+  def __new__(cls):
+3
+    if not hasattr(cls, 'instance'):
+4
+      cls.instance = super(SingletonClass, cls).__new__(cls)
+5
+    return cls.instance
+6
+  
+7
+singleton = SingletonClass()
+8
+new_singleton = SingletonClass()
+9
+​
+10
+print(singleton is new_singleton)
+11
+​
+12
+singleton.singl_variable = "Singleton Variable"
+13
+print(new_singleton.singl_variable)
+
+Output
+True
+Singleton Variable
+Here, in the __new__ method, we will check whether an instance is created or not. If created, it will return the instance; otherwise, it will create a new instance. You can notice that singleton and new_singleton return the same instance and have the same variable.
+
+Let’s check what happens when we subclass a singleton class. 
+
+
+
+1
+class SingletonClass(object):
+2
+  def __new__(cls):
+3
+    if not hasattr(cls, 'instance'):
+4
+      cls.instance = super(SingletonClass, cls).__new__(cls)
+5
+    return cls.instance
+6
+  
+7
+class SingletonChild(SingletonClass):
+8
+    pass
+9
+  
+10
+singleton = SingletonClass()  
+11
+child = SingletonChild()
+12
+print(child is singleton)
+13
+​
+14
+singleton.singl_variable = "Singleton Variable"
+15
+print(child.singl_variable)
+ 
+ 
+
+
+Output
+True
+Singleton Variable
+Here, you can see that SingletonChild has the same instance of SingletonClass and also shares the same state. But there are scenarios, where we need a different instance, but should share the same state. This state sharing can be achieved using Borg singleton.
+
+Borg Singleton: 
+
+Borg singleton is a design pattern in Python that allows state sharing for different instances. Let’s look into the following code.
+
+
+
+1
+class BorgSingleton(object):
+2
+  _shared_borg_state = {}
+3
+  
+4
+  def __new__(cls, *args, **kwargs):
+5
+    obj = super(BorgSingleton, cls).__new__(cls, *args, **kwargs)
+6
+    obj.__dict__ = cls._shared_borg_state
+7
+    return obj
+8
+  
+9
+borg = BorgSingleton()
+10
+borg.shared_variable = "Shared Variable"
+11
+​
+12
+class ChildBorg(BorgSingleton):
+13
+  pass
+14
+​
+15
+childBorg = ChildBorg()
+16
+print(childBorg is borg)
+17
+print(childBorg.shared_variable)
+
+Output
+False
+Shared Variable
+Along with the new instance creation process, a shared state is also defined in the __new__ method. Here the shared state is retained using the shared_borg_state attribute and it is stored in the __dict__ dictionary of each instance.
+
+If you want a different state, then you can reset the  shared_borg_state attribute. Let’s see how to reset a shared state.
+
+
+
+1
+class BorgSingleton(object):
+2
+  _shared_borg_state = {}
+3
+  
+4
+  def __new__(cls, *args, **kwargs):
+5
+    obj = super(BorgSingleton, cls).__new__(cls, *args, **kwargs)
+6
+    obj.__dict__ = cls._shared_borg_state
+7
+    return obj
+8
+  
+9
+borg = BorgSingleton()
+10
+borg.shared_variable = "Shared Variable"
+11
+​
+12
+class NewChildBorg(BorgSingleton):
+13
+    _shared_borg_state = {}
+14
+​
+15
+newChildBorg = NewChildBorg()
+16
+print(newChildBorg.shared_variable)
+Here, we have reset the shared state and tried to access the shared_variable. Let’s see the error.
+
+Traceback (most recent call last):
+  File "/home/329d68500c5916767fbaf351710ebb13.py", line 16, in <module>
+    print(newChildBorg.shared_variable)
+AttributeError: 'NewChildBorg' object has no attribute 'shared_variable'
+Use cases of a Singleton:
+
+Let’s list a few of the use cases of a singleton class. They are as follows:
+
+Managing a database connection
+Global point access to writing log messages
+File Manager
+Print spooler
+Create a Web Crawler using Classic Singleton:
+
+Let’s create a webcrawler that uses the benefit of a classic singleton. In this practical example, the crawler scans a webpage, fetch the links associated with the same website, and download all the images in it. Here, we have two main classes and two main functions.
+
+CrawlerSingleton: This class acts a classic singleton
+ParallelDownloader: This class provides thread functionality to download images
+navigate_site: This function crawls the website and fetches the links that belong to the same website. And, finally, it arranges the link to download images.
+download_images: This function crawls the page link and downloads the images.
+Apart from the above classes and functions, we use two sets of libraries to parse the web page – BeautifulSoup and HTTP Client.
+
+Have a look at the below code. 
+
+Note: Execute the code in your local machine
+
+
+
+1
+import httplib2
+2
+import os
+3
+import re
+4
+import threading
+5
+import urllib
+6
+import urllib.request
+7
+from urllib.parse import urlparse, urljoin
+8
+from bs4 import BeautifulSoup
+9
+​
+10
+class CrawlerSingleton(object):
+11
+    def __new__(cls):
+12
+        """ creates a singleton object, if it is not created, 
+13
+        or else returns the previous singleton object"""
+14
+        if not hasattr(cls, 'instance'):
+15
+            cls.instance = super(CrawlerSingleton, cls).__new__(cls)
+16
+        return cls.instance
+17
+​
+18
+def navigate_site(max_links = 5):
+19
+    """ navigate the website using BFS algorithm, find links and
+20
+        arrange them for downloading images """
+21
+​
+22
+    # singleton instance
+23
+    parser_crawlersingleton = CrawlerSingleton()
+24
+    
+25
+    # During the initial stage, url_queue has the main_url. 
+26
+    # Upon parsing the main_url page, new links that belong to the 
+27
+    # same website is added to the url_queue until
+28
+    # it equals to max _links.
+29
+    while parser_crawlersingleton.url_queue:
+30
+​
+31
+        # checks whether it reached the max. link
+32
+        if len(parser_crawlersingleton.visited_url) == max_links:
+33
+            return
+34
+​
+35
+        # pop the url from the queue
+36
+        url = parser_crawlersingleton.url_queue.pop()
+37
+​
+38
+        # connect to the web page
+39
+        http = httplib2.Http()
+40
+        try:
+41
+            status, response = http.request(url)
+42
+        except Exception:
+43
+            continue
+44
+        
+45
+        # add the link to download the images
+46
+        parser_crawlersingleton.visited_url.add(url)
+47
+        print(url)
+48
+​
+49
+        # crawl the web page and fetch the links within
+50
+        # the main page
+51
+        bs = BeautifulSoup(response, "html.parser")
+52
+​
+53
+        for link in BeautifulSoup.findAll(bs, 'a'):
+54
+            link_url = link.get('href')
+55
+            if not link_url:
+56
+                continue
+57
+​
+58
+            # parse the fetched link
+59
+            parsed = urlparse(link_url)
+60
+            
+61
+            # skip the link, if it leads to an external page
+62
+            if parsed.netloc and parsed.netloc != parsed_url.netloc:
+63
+                continue
+64
+​
+65
+            scheme = parsed_url.scheme
+66
+            netloc = parsed.netloc or parsed_url.netloc
+67
+            path = parsed.path
+68
+            
+69
+            # construct a full url 
+70
+            link_url = scheme +'://' +netloc + path
+71
+​
+72
+            
+73
+            # skip, if the link is already added
+74
+            if link_url in parser_crawlersingleton.visited_url:
+75
+                continue
+76
+            
+77
+            # Add the new link fetched,
+78
+            # so that the while loop continues with next iteration.
+79
+            parser_crawlersingleton.url_queue = [link_url] +\
+80
+                                                parser_crawlersingleton.url_queue
+81
+            
+82
+class ParallelDownloader(threading.Thread):
+83
+    """ Download the images parallelly """
+84
+    def __init__(self, thread_id, name, counter):
+85
+        threading.Thread.__init__(self)
+86
+        self.name = name
+87
+​
+88
+    def run(self):
+89
+        print('Starting thread', self.name)
+90
+        # function to download the images 
+91
+        download_images(self.name)
+92
+        print('Finished thread', self.name)
+93
+            
+94
+def download_images(thread_name):
+95
+    # singleton instance
+96
+    singleton = CrawlerSingleton()
+97
+    # visited_url has a set of URLs. 
+98
+    # Here we will fetch each URL and 
+99
+    # download the images in it.
+100
+    while singleton.visited_url:
+101
+        # pop the url to download the images 
+102
+        url = singleton.visited_url.pop()
+103
+​
+104
+        http = httplib2.Http()
+105
+        print(thread_name, 'Downloading images from', url)
+106
+​
+107
+        try:
+108
+            status, response = http.request(url)
+109
+        except Exception:
+110
+            continue
+111
+​
+112
+        # parse the web page to find all images
+113
+        bs = BeautifulSoup(response, "html.parser")
+114
+​
+115
+        # Find all <img> tags
+116
+        images = BeautifulSoup.findAll(bs, 'img')
+117
+​
+118
+        for image in images:
+119
+            src = image.get('src')
+120
+            src = urljoin(url, src)
+121
+​
+122
+            basename = os.path.basename(src)
+123
+            print('basename:', basename)
+124
+​
+125
+            if basename != '':
+126
+                if src not in singleton.image_downloaded:
+127
+                    singleton.image_downloaded.add(src)
+128
+                    print('Downloading', src)
+129
+                    # Download the images to local system
+130
+                    urllib.request.urlretrieve(src, os.path.join('images', basename))
+131
+                    print(thread_name, 'finished downloading images from', url)
+132
+​
+133
+def main():
+134
+    # singleton instance
+135
+    crwSingltn = CrawlerSingleton()
+136
+​
+137
+    # adding the url to the queue for parsing
+138
+    crwSingltn.url_queue = [main_url]
+139
+​
+140
+    # initializing a set to store all visited URLs
+141
+    # for downloading images.
+142
+    crwSingltn.visited_url = set()
+143
+​
+144
+    # initializing a set to store path of the downloaded images
+145
+    crwSingltn.image_downloaded = set()
+146
+    
+147
+    # invoking the method to crawl the website
+148
+    navigate_site()
+149
+​
+150
+    ## create images directory if not exists
+151
+    if not os.path.exists('images'):
+152
+        os.makedirs('images')
+153
+​
+154
+    thread1 = ParallelDownloader(1, "Thread-1", 1)
+155
+    thread2 = ParallelDownloader(2, "Thread-2", 2)
+156
+​
+157
+    # Start new threads
+158
+    thread1.start()
+159
+    thread2.start()
+160
+​
+161
+    
+162
+if __name__ == "__main__":
+163
+    main_url = ("https://www.geeksforgeeks.org/")
+164
+    parsed_url = urlparse(main_url)
+165
+    main()
+Let’s look into the downloaded images and python shell output.
+
+
+Downloaded Images
+
+
+Python Shell Output
+
+Summary:
+
+Singleton pattern is a design pattern in Python that restricts the instantiation of a class to one object. It can limit concurrent access to a shared resource, and also it helps to create a global point of access for a resource. 
+
+
+
+Singleton Pattern in Python – A Complete Guide – FAQs
+How to Do Singleton Design Pattern in Python?
+The Singleton design pattern ensures that a class has only one instance and provides a global point of access to that instance. In Python, the Singleton pattern can be implemented using a class method or by overriding the __new__ method to control the object creation process.
+
+
+Example using __new__ method:
+
+
+class Singleton:
+    _instance = None
+
+    def __new__(cls):
+        if not cls._instance:
+            cls._instance = super(Singleton, cls).__new__(cls)
+        return cls._instance
+
+# Usage
+s1 = Singleton()
+s2 = Singleton()
+print(s1 is s2)  # Output: True
+What is the Attribute of Singleton in Python?
+In the context of implementing a Singleton, the attribute typically refers to a class variable that holds the single instance of the class. This attribute is used to check whether an instance already exists and to return the existing instance if requested again.
+
+
+Example:
+
+
+class Singleton:
+    _instance = None  # Singleton attribute holding the instance
+    # Remaining implementation...
+What is the Factory Pattern in Python with Singleton?
+The Factory pattern is a creational design pattern used to create objects without specifying the exact class of object that will be created. Combining it with a Singleton can ensure that the factory itself is a singleton or that it produces singletons.
+
+
+Example of a Factory Pattern with Singleton:
+
+
+class Singleton:
+    _instances = {}
+
+    def __new__(cls, class_name):
+        if class_name not in cls._instances:
+            cls._instances[class_name] = super(Singleton, cls).__new__(cls)
+        return cls._instances[class_name]
+
+class Car:
+    pass
+
+class Truck:
+    pass
+
+# Factory function
+def vehicle_factory(vehicle_type):
+    return Singleton(vehicle_type)
+
+# Usage
+car1 = vehicle_factory(Car)
+car2 = vehicle_factory(Car)
+truck1 = vehicle_factory(Truck)
+
+print(car1 is car2)  # Output: True
+print(car1 is truck1)  # Output: False
+What is the Alternative to Singleton in Python?
+Alternatives to the Singleton pattern in Python include using module-level global variables or the Borg pattern (Monostate pattern), where all instances share the same state.
+
+
+Borg Pattern Example:
+
+
+class Borg:
+    _shared_state = {}
+
+    def __init__(self):
+        self.__dict__ = self._shared_state
+
+# Usage
+b1 = Borg()
+b2 = Borg()
+b1.x = 4
+print(b2.x)  # Output: 4
+What is the Difference Between __new__ and __init__?
+__new__ is a static method responsible for creating a new instance of a class. It is called before __init__ and is responsible for returning a new instance of your class. In custom object creation scenarios like singletons, __new__ can be overridden to control how instances are created.
+__init__ is the constructor method of the class and is called after __new__ to initialize the new instance. __init__ doesn’t return anything; it only initializes the object after it’s been created.
+Example illustrating the difference:
+
+
+class MyClass:
+    def __new__(cls):
+        print("Creating instance")
+        instance = super(MyClass, cls).__new__(cls)
+        return instance
+
+    def __init__(self):
+        print("Initializing instance")
+
+obj = MyClass()
+This code prints “Creating instance” followed by “Initializing instance,” showing the order of operation and the roles of __new__ and __init__
+
