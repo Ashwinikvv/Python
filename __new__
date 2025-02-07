@@ -4,3 +4,284 @@ __new__ returns new class instantiated i.e obj,has to return obj created
 __init__ does initialization and assigns values etc ,cannot return anything
 
 when obj created from class,first new is called then init is called
+
+
+is an Object oriented programming language i.e everything in Python is an object. There are special kind of methods in Python known as
+
+magic methods
+or
+
+dunder methods
+(dunder here means “
+
+Double Underscores
+
+”). Dunder or magic methods in Python are the methods having two prefix and suffix underscores in the method name. These are commonly used for operator overloading. Few examples for magic methods are:
+
+__init__
+
+,
+
+__add__
+
+,
+
+__len__
+
+,
+
+__repr__
+
+etc.
+
+Note:
+
+To know more about Magic methods
+
+click here
+.
+
+__new__ method
+Whenever a class is instantiated
+
+__new__
+
+and
+
+__init__
+
+methods are called.
+
+__new__
+
+method will be called when an object is created and
+
+__init__
+
+method will be called to initialize the object. In the base class
+
+object
+
+, the __new__ method is defined as a static method which requires to pass a parameter
+
+cls
+
+.
+
+cls
+
+represents the class that is needed to be instantiated, and the compiler automatically provides this parameter at the time of instantiation.
+
+Syntax:
+
+class class_name:
+    def __new__(cls, *args, **kwargs):
+        statements
+        .
+        .
+        return super(class_name, cls).__new__(cls, *args, **kwargs)
+Note:
+
+Instance can be created inside
+
+__new__
+
+method either by using
+
+super
+
+function or by directly calling
+
+__new__
+
+method over object, where if parent class is object. That is
+
+instance = super(MyClass, cls).__new__(cls, *args, **kwargs)
+
+or
+
+instance = object.__new__(cls, *args, **kwargs)
+
+If both __init__ method and __new__ method exists in the class, then the __new__ method is executed first and decides whether to use __init__ method or not, because other class constructors can be called by __new__ method or it can simply return other objects as an instance of this class.
+
+Example:
+
+
+# Python program to 
+# demonstrate __new__
+
+# don't forget the object specified as base
+class A(object):
+    def __new__(cls):
+         print("Creating instance")
+         return super(A, cls).__new__(cls)
+
+    def __init__(self):
+        print("Init is called")
+
+A()
+Output:
+
+Creating instance
+Init is called
+The above example shows that __new__ method is called automatically when calling the class name, whereas __init__ method is called every time an instance of the class is returned by __new__ method, passing the returned instance to __init__ as the
+
+self
+
+parameter, therefore even if you were to save the instance somewhere globally/statically and return it every time from __new__, then __init__ will be called every time you do just that. This means that if the super is omitted for __new__ method the __init__ method will not be executed. Let’s see if that is the case.
+
+
+# Python program to
+# demonstrate __new__
+
+class A(object):
+    def __new__(cls):
+        print("Creating instance")
+
+    # It is not called
+    def __init__(self):
+        print("Init is called")
+
+print(A())
+Output:
+
+Creating instance
+None
+In the above example, it can be seen that
+
+__init__
+
+method is not called and the instantiation is evaluated to be
+
+None
+
+because the constructor is not returning anything. Let’s see what happens if both the __new__ and __init__ methods are returning something.
+
+
+# Python program to
+# demonstrate __new__
+
+class A(object):
+    # new method returning a string
+    def __new__(cls):
+        print("Creating instance")
+        return "GeeksforGeeks"
+
+class B(object):
+    # init method returning a string
+    def __init__(self):
+        print("Initializing instance")
+        return "GeeksforGeeks"
+
+print(A())
+print(B())
+Output:
+
+Creating instance
+GeeksforGeeks
+Initializing instance
+Traceback (most recent call last):
+  File "/home/62216eb30d3856048eff916fb8d4c32d.py", line 17, in 
+    print(B())
+TypeError: __init__() should return None, not 'str'
+This TypeError is raised by the handler that calls __init__ method and it wouldn’t even make sense to return anything from __init__ method since it’s purpose is just to alter the fresh state of the newly created instance. Let’s try an example in which __new__ method returns an instance of a different class.
+
+Example:
+
+
+# Python program to
+# demonstrate __new__ method
+
+# class whose object
+# is returned
+class GeeksforGeeks(object):
+    def __str__(self):
+        return "GeeksforGeeks"
+        
+# class returning object
+# of different class
+class Geek(object):
+    def __new__(cls):
+        return GeeksforGeeks()
+        
+    def __init__(self):
+        print("Inside init")
+        
+print(Geek())
+Output:
+
+GeeksforGeeks
+__new__ in Python – FAQs
+How to override __new__() in a custom class?
+To override __new__() in a custom class, you need to define it as a class method that takes cls as its first parameter. __new__() is responsible for creating a new instance of the class, and it returns the new object. Here’s a basic example of overriding __new__():
+
+
+class MyClass:
+    def __new__(cls, *args, **kwargs):
+        print(f'Creating instance of {cls.__name__}')
+        # Create a new instance of the class
+        instance = super(MyClass, cls).__new__(cls)
+        return instance
+
+    def __init__(self, value):
+        self.value = value
+
+# Creating an instance
+obj = MyClass(10)  # Output: Creating instance of MyClass
+print(obj.value)  # Output: 10
+What is the purpose of __new__() in object creation?
+The purpose of __new__() is to handle the creation of a new instance of a class. It is responsible for:
+
+
+Allocating memory for the new object.
+Returning a new instance of the class.
+__new__() is called before __init__(), and it can return an existing instance or a new one.
+
+
+How does __new__() handle object instantiation and initialization?
+Instantiation: __new__() is responsible for creating a new instance of the class. It allocates memory and prepares the object.
+Initialization: After __new__() returns the new instance, the __init__() method is called to initialize the object’s state.
+Example:
+
+
+class MyClass:
+    def __new__(cls, *args, **kwargs):
+        instance = super(MyClass, cls).__new__(cls)
+        print("Instance created")
+        return instance
+
+    def __init__(self, value):
+        self.value = value
+        print("Instance initialized")
+
+obj = MyClass(10)
+# Output:
+# Instance created
+# Instance initialized
+How to customize object creation and allocation with __new__()?
+To customize object creation and allocation, you can override __new__() and include custom logic before or after calling super().__new__(cls).
+
+
+Example of customizing object creation:
+
+
+class Singleton:
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super(Singleton, cls).__new__(cls, *args, **kwargs)
+        return cls._instance
+
+    def __init__(self, value):
+        self.value = value
+
+# Testing the Singleton pattern
+s1 = Singleton(10)
+s2 = Singleton(20)
+
+print(s1.value)  # Output: 10
+print(s2.value)  # Output: 10
+print(s1 is s2)  # Output: True
+Can we use __new__() to create singleton classes in Python?
+Yes, you can use __new__() to implement the Singleton pattern. In this pattern, __new__() ensures that only one instance of the class is created. Subsequent calls to __new__() return the same instance.
